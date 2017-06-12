@@ -4,7 +4,7 @@
 
 dbactions::dbactions(QObject *parent) : QObject(parent)
 {
-
+    createDB();
 }
 
 void dbactions::createDB()
@@ -156,6 +156,42 @@ void dbactions::update(const QString &path)
 
 }
 
+
+
+void dbactions::select(const QString &query)
+{
+    this->prepareQuick();
+
+    qDebug()<<"tryin to run a slection"<<query;
+    QList<QMap<int,QVariant>> resultSet;
+
+    sqlQuery.prepare(query);
+
+
+    if(sqlQuery.exec())
+    {
+
+        while(sqlQuery.next())
+        {
+
+            auto url = sqlQuery.value(URL);
+            auto title = sqlQuery.value(TITLE);
+            auto rate = sqlQuery.value(RATE);
+            auto fav = sqlQuery.value(FAV);
+            auto color = sqlQuery.value(COLOR);
+            auto note = sqlQuery.value(NOTE);
+            auto adddate = sqlQuery.value(ADDDATE);
+            auto source = sqlQuery.value(SOURCE);
+
+            QMap<int,QVariant> map = {{URL,url},{TITLE,title},{RATE,rate},{FAV,fav},{COLOR,color},{NOTE,note},{ADDDATE,adddate},{SOURCE,source}};
+            resultSet<<map;
+        }
+    }
+
+    emit selectionReady(resultSet);
+
+}
+
 void dbactions::openConnection()
 {
     if (!sqlDatabase.isOpen())
@@ -190,33 +226,81 @@ void dbactions::insertImage(const QString &url, const int &rate, const int &fav)
     map.insert("fav",fav);
     map.insert("color","");
     map.insert("note","");
-    map.insert("addDate","CURRENT_TIMESTAMP");
+    map.insert("addDate",QDate::currentDate());
     map.insert("source",source);
     this->insert("images",map);
+
+    emit imageAdded();
 
 }
 
 void dbactions::insertImages(const QStringList &urls)
 {
-
     this->prepareQuick();
     foreach(const auto &url, urls)
         this->insertImage(url);
 
-    emit finishedInsertingImages();
+    emit finished();
 }
 
+void dbactions::insertPath(const QString &path)
+{
+    QStringList paths;
+
+    if (QFileInfo(path).isDir())
+    {
+        QDirIterator it(path, {"*.png", "*.xpm"," *.jpg", "*.jpeg", "*.gif", "*.bmp", "*.svg"}, QDir::Files, QDirIterator::Subdirectories);
+
+        while (it.hasNext()) paths << it.next();
+
+    } else if (QFileInfo(path).isFile()) paths << path;
+
+
+    emit pathSize(paths.size());
+
+    this->insertImages(paths);
+}
 
 void dbactions::prepareQuick()
 {
     openConnection();
     if(!sqlQuery.exec("PRAGMA synchronous=OFF"))
-    {
         qDebug()<<"synchronous failed";
+
+}
+
+QList<QMap<int, QVariant> > dbactions::selectImage(const QString &img)
+{
+    QList<QMap<int, QVariant>> result;
+    prepareQuick();
+
+    sqlQuery.prepare("select * from images where title = '"+img+"';");
+
+    if(sqlQuery.exec())
+    {
+
+        while(sqlQuery.next())
+        {
+
+            auto url = sqlQuery.value(URL);
+            auto title = sqlQuery.value(TITLE);
+            auto rate = sqlQuery.value(RATE);
+            auto fav = sqlQuery.value(FAV);
+            auto color = sqlQuery.value(COLOR);
+            auto note = sqlQuery.value(NOTE);
+            auto adddate = sqlQuery.value(ADDDATE);
+            auto source = sqlQuery.value(SOURCE);
+
+            QMap<int,QVariant> map = {{URL,url},{TITLE,title},{RATE,rate},{FAV,fav},{COLOR,color},{NOTE,note},{ADDDATE,adddate},{SOURCE,source}};
+
+            result<<map;
+        }
     }
+    return result;
 }
 
 void dbactions::insertAlbum(const QString &title)
 {
 
 }
+

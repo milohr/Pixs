@@ -41,9 +41,10 @@
 
 #include "utils.h"
 #include "pixsutils.h"
-#include "db/dbactions.h"
+#include "db/dbthread.h"
 #include "settings.h"
-
+#include "albumsview.h"
+#include "collectionview.h"
 
 namespace Ui {
 class MainWindow;
@@ -66,10 +67,9 @@ private:
 
     Ui::MainWindow *ui;
 
-    dbactions db;
-
     Settings *settingsView;
-
+    collectionView *galleryView;
+    AlbumsView *albumsView;
 
     QFrame *frame;
     QHBoxLayout *layout;

@@ -6,6 +6,7 @@
 
 QT       += core gui
 QT       += sql
+
 qtHaveModule(printsupport): QT += printsupport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -29,14 +30,24 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     db/dbactions.cpp \
-    settings.cpp
+    settings.cpp \
+    db/dbthread.cpp \
+    albumsview.cpp \
+    album.cpp \
+    scrolltext.cpp \
+    collectionview.cpp
 
 HEADERS += \
         mainwindow.h \
     pixsutils.h \
     utils.h \
     db/dbactions.h \
-    settings.h
+    settings.h \
+    db/dbthread.h \
+    albumsview.h \
+    album.h \
+    scrolltext.h \
+    collectionview.h
 
 FORMS += \
         mainwindow.ui \

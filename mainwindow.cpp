@@ -58,7 +58,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
 
-
     //*THE SIDEBAR*//
     setUpSidebar();
 
@@ -73,6 +72,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
     //*PIXS MAINWINDOW*//
     setUpPixs();
+
+    if(PixsUtils::fileExists(PixsUtils::CollectionDBPath+"pixs.db"))
+    {
+        qDebug()<<"db exist trying to populate tables";
+        galleryView->populate("select * from images");
+    }
 
 
 }
@@ -171,11 +176,17 @@ void MainWindow::setUpViews()
 
 
     settingsView = new Settings(this);
-
+    galleryView = new collectionView(this);
+    connect(galleryView,&collectionView::imageDoubleClicked,[this](QList<QMap<int,QVariant>> map)
+    {
+        this->loadFile(map.first().value(dbactions::URL).toString());
+        stack->setCurrentIndex(VIEWER);
+    });
+    albumsView = new AlbumsView(this);
 
     //*THE VIEWS MAIN STACK*//
     stack->addWidget(scrollArea);
-    stack->addWidget(new QPushButton("2"));
+    stack->addWidget(galleryView);
     stack->addWidget(new QPushButton("3"));
     stack->addWidget(new QPushButton("4"));
     stack->addWidget(new QPushButton("5"));
@@ -594,8 +605,8 @@ void MainWindow::showToolbar()
 
 void MainWindow::leaveEvent(QEvent *event)
 {
-  //  toolbar->setVisible(false);
-  //  toolbarBorder->setVisible(false);
+    //  toolbar->setVisible(false);
+    //  toolbarBorder->setVisible(false);
     event->accept();
 }
 

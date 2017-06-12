@@ -5,7 +5,7 @@
 #include <QFileDialog>
 #include <QDirIterator>
 
-#include "db/dbactions.h"
+#include "db/dbthread.h"
 
 namespace Ui {
 class Settings;
@@ -25,7 +25,7 @@ private slots:
 
 private:
     Ui::Settings *ui;
-    dbactions db;
+    dbthread *db;
 };
 
 #endif // SETTINGS_H

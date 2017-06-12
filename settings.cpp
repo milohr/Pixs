@@ -7,17 +7,10 @@ Settings::Settings(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    connect(&db,&dbactions::logMessage,[this](QString msg)
-    {
+    ui->progressBar->setVisible(false);
+    db = new dbthread;
+    db->start();
 
-        qDebug()<<msg;
-    });
-    connect(&db,&dbactions::finishedInsertingImages,[this]()
-    {
-
-        qDebug()<<"finished inserting images";
-    });
-    db.createDB();
 }
 
 Settings::~Settings()
@@ -28,17 +21,26 @@ Settings::~Settings()
 void Settings::on_toolButton_clicked()
 {
     QString path = QFileDialog::getExistingDirectory(this,"Select folder...", QDir().homePath()+"/Music/");
-    QStringList urlCollection;
 
-    if (QFileInfo(path).isDir())
+    ui->listWidget->addItem(path);
+
+    ui->progressBar->setVisible(true);
+
+    connect(db,&dbthread::pathSize,ui->progressBar,&QProgressBar::setMaximum);
+
+    connect(db,&dbthread::imageAdded,[this]()
     {
-        QDirIterator it(path, {"*.png", "*.xpm"," *.jpg", "*.jpeg", "*.gif", "*.bmp", "*.svg"}, QDir::Files, QDirIterator::Subdirectories);
+        ui->progressBar->setValue(ui->progressBar->value()+1);
 
-        while (it.hasNext()) urlCollection << it.next();
+    });
 
-    } else if (QFileInfo(path).isFile()) urlCollection << path;
+    connect(db,&dbthread::finished,[this]()
+    {
+        ui->progressBar->setValue(0);
+        ui->progressBar->setVisible(false);
 
+    });
 
-    db.insertImages(urlCollection);
+    db->insertPath(path);
 
 }
