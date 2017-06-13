@@ -44,25 +44,26 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
   , frame(new QFrame)
   , layout(new QHBoxLayout)
-  , sidebar(new QWidget)
-  , sidebarBtns(new QButtonGroup)
-  , views(new QWidget)
-  , toolbar(new QWidget)
-  , toolbarBtns(new QButtonGroup)
-  , altSidebar(new QWidget)
-  , imageLabel(new QLabel)
-  , scrollArea(new QScrollArea),
-    stack(new QStackedWidget)
+  , collectionUtils(new QWidget(this))
+  , collectionBtns(new QButtonGroup(this))
+  , views(new QWidget(this))
+  , viewerUtils(new QWidget(this))
+  , utilsBar (new QWidget(this))
+  , altSidebar(new QWidget(this))
+  , imageLabel(new QLabel(this))
+  , scrollArea(new QScrollArea(this)),
+    stack(new QStackedWidget(this))
   , scaleFactor(1)
 {
     ui->setupUi(this);
 
 
+    this->setWindowTitle("Pixs");
     //*THE SIDEBAR*//
-    setUpSidebar();
+    setUpCollectionBar();
 
     //*THE TOOLBAR*// /*this needs to go before setting up the views because views contains the toolbar*/
-    setUpToolbar();
+    setUpViewerBar();
 
     //*THE VIEWS*//
     setUpViews();
@@ -89,20 +90,21 @@ MainWindow::~MainWindow()
 
 
 
-void MainWindow::setUpSidebar()
+void MainWindow::setUpCollectionBar()
 {
     qDebug()<<"setting up the sidebar";
-    connect(sidebarBtns,SIGNAL(buttonClicked(int)),this, SLOT(changeView(int)));
-    sidebar->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
-    sidebarBorder = new lineS(Qt::Vertical);
-    auto sidebarLayout = new QVBoxLayout();
-    sidebar->setLayout(sidebarLayout);
-    sidebarLayout->setContentsMargins(0,0,0,0);
-    sidebarLayout->setMargin(0);
+    connect(collectionBtns,SIGNAL(buttonClicked(int)),this, SLOT(changeView(int)));
+    collectionUtils->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-    sidebarBtns->setExclusive(true);
+    auto collectionUtils_layout = new QHBoxLayout();
+    collectionUtils->setLayout(collectionUtils_layout);
+    collectionUtils_layout->setContentsMargins(0,0,0,0);
+    collectionUtils_layout->setMargin(0);
 
-    sidebarLayout->addWidget(new spacer());
+    collectionBtns->setExclusive(true);
+
+    collectionUtils_layout->addStretch();
+
     for(int i=0; i<SCOUNT;i++)
     {
         auto btn = new QToolButton();
@@ -110,30 +112,30 @@ void MainWindow::setUpSidebar()
         btn->setAutoRaise(true);
         btn->setIconSize(QSize(16,16));
         btn->setCheckable(true);
-        sidebarBtns->addButton(btn,i);
-        sidebarLayout->addWidget(btn);
+        collectionBtns->addButton(btn,i);
+        collectionUtils_layout->addWidget(btn);
 
     }
-    sidebarLayout->addWidget(new spacer());
+    collectionUtils_layout->addStretch();
 
-    sidebarBtns->button(VIEWER)->setIcon(QIcon::fromTheme("folder-image"));
-    sidebarBtns->button(VIEWER)->setToolTip(tr("Viewer"));
-    sidebarBtns->button(VIEWER)->setChecked(true);
+    collectionBtns->button(VIEWER)->setIcon(QIcon::fromTheme("folder-image"));
+    collectionBtns->button(VIEWER)->setToolTip(tr("Viewer"));
+    collectionBtns->button(VIEWER)->setChecked(true);
 
-    sidebarBtns->button(GALLERY)->setIcon(QIcon::fromTheme("view-grid"));
-    sidebarBtns->button(GALLERY)->setToolTip(tr("Gallery"));
+    collectionBtns->button(GALLERY)->setIcon(QIcon::fromTheme("view-grid"));
+    collectionBtns->button(GALLERY)->setToolTip(tr("Gallery"));
 
-    sidebarBtns->button(ALBUMS)->setIcon(QIcon::fromTheme("identity"));
-    sidebarBtns->button(ALBUMS)->setToolTip(tr("Albums"));
+    collectionBtns->button(ALBUMS)->setIcon(QIcon::fromTheme("identity"));
+    collectionBtns->button(ALBUMS)->setToolTip(tr("Albums"));
 
-    sidebarBtns->button(PEOPLE)->setIcon(QIcon::fromTheme("tag-people"));
-    sidebarBtns->button(PEOPLE)->setToolTip(tr("People"));
+    collectionBtns->button(PEOPLE)->setIcon(QIcon::fromTheme("tag-people"));
+    collectionBtns->button(PEOPLE)->setToolTip(tr("People"));
 
-    sidebarBtns->button(TAGS)->setIcon(QIcon::fromTheme("tag"));
-    sidebarBtns->button(TAGS)->setToolTip(tr("Tags"));
+    collectionBtns->button(TAGS)->setIcon(QIcon::fromTheme("tag"));
+    collectionBtns->button(TAGS)->setToolTip(tr("Tags"));
 
-    sidebarBtns->button(SETTINGS)->setIcon(QIcon::fromTheme("configure"));
-    sidebarBtns->button(SETTINGS)->setToolTip(tr("Settings"));
+    collectionBtns->button(SETTINGS)->setIcon(QIcon::fromTheme("configure"));
+    collectionBtns->button(SETTINGS)->setToolTip(tr("Settings"));
 
 
 
@@ -150,12 +152,23 @@ void MainWindow::setUpViews()
     auto viewsLayout=new QVBoxLayout();
     views->setLayout(viewsLayout);
 
+    utilsBar = new QWidget(this);
+    utilsBar->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Fixed);
+    auto utilsBar_layout = new QHBoxLayout();
+    utilsBar_layout->setContentsMargins(0,0,0,0);
+    utilsBar_layout->setMargin(0);
+    utilsBar->setLayout(utilsBar_layout);
+
+    utilsBar_layout->addWidget(collectionUtils);
+    utilsBar_layout->addWidget(viewerUtils);
+
+
     viewsLayout->setContentsMargins(0,0,0,0);
     viewsLayout->setMargin(0);
     viewsLayout->setSpacing(0);
     viewsLayout->addWidget(stack);
     viewsLayout->addWidget(toolbarBorder);
-    viewsLayout->addWidget(toolbar,Qt::AlignBottom);
+    viewsLayout->addWidget(utilsBar,Qt::AlignBottom);
 
     stack->setContentsMargins(0,0,0,0);
     //stack->layout()->setContentsMargins(0,0,0,0);
@@ -180,7 +193,7 @@ void MainWindow::setUpViews()
     connect(galleryView,&collectionView::imageDoubleClicked,[this](QList<QMap<int,QVariant>> map)
     {
         this->loadFile(map.first().value(dbactions::URL).toString());
-        stack->setCurrentIndex(VIEWER);
+        this->changeView(VIEWER);
     });
     albumsView = new AlbumsView(this);
 
@@ -192,71 +205,64 @@ void MainWindow::setUpViews()
     stack->addWidget(new QPushButton("5"));
     stack->addWidget(settingsView);
 
-
+    changeView(GALLERY);
 
 }
 
-void MainWindow::setUpToolbar()
+void MainWindow::setUpViewerBar()
 {
     qDebug()<<"setting up the toolbar";
 
-    toolbar->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+    viewerUtils->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
     toolbarBorder = new lineS(Qt::Horizontal);
-    auto toolbarLayout = new QHBoxLayout();
-    toolbar->setLayout(toolbarLayout);
-    toolbarLayout->setContentsMargins(0,0,0,0);
-    toolbarLayout->setMargin(0);
-    toolbarLayout->setSpacing(0);
-
+    auto viewerUtils_layout = new QHBoxLayout();
+    viewerUtils->setLayout(viewerUtils_layout);
+    viewerUtils_layout->setContentsMargins(0,0,0,0);
+    viewerUtils_layout->setMargin(0);
+    viewerUtils_layout->setSpacing(0);
     for(int i=0; i<TCOUNT; i++)
     {
         auto btn = new QToolButton();
         btn->setAutoRaise(true);
         btn->setIconSize(QSize(16,16));
-        toolbarBtns->addButton(btn,i);
+        viewerBtns.insert(i,btn);
 
     }
 
-    toolbarBtns->button(SIDEBAR)->setIcon(QIcon::fromTheme("view-file-columns"));
-    toolbarLayout->addWidget(toolbarBtns->button(SIDEBAR));
-    toolbarBtns->button(SIDEBAR)->setCheckable(true);
-    toolbarBtns->button(SIDEBAR)->setChecked(true);
-    connect(toolbarBtns->button(SIDEBAR),SIGNAL(clicked()),this,SLOT(sidebarBtn_clicked()));
+    viewerBtns[SIDEBAR]->setIcon(QIcon::fromTheme("view-file-columns"));
+    viewerUtils_layout->addWidget(viewerBtns[SIDEBAR]);
+    connect(viewerBtns[SIDEBAR],&QToolButton::clicked,this,&MainWindow::sidebarBtn_clicked);
 
-    toolbarBtns->button(FULLSCREEN)->setIcon(QIcon::fromTheme("view-fullscreen"));
-    toolbarLayout->addWidget(toolbarBtns->button(FULLSCREEN));
+    viewerBtns[FULLSCREEN]->setIcon(QIcon::fromTheme("view-fullscreen"));
+    viewerUtils_layout->addWidget(viewerBtns[FULLSCREEN]);
 
-    toolbarLayout->addWidget(new spacer());
+    viewerUtils_layout->addStretch();
 
-    toolbarBtns->button(PREVIOUS)->setIcon(QIcon::fromTheme("go-previous"));
-    toolbarLayout->addWidget(toolbarBtns->button(PREVIOUS));
-    connect(toolbarBtns->button(PREVIOUS),SIGNAL(clicked()),this,SLOT(previousBtn_clicked()));
+    viewerBtns[PREVIOUS]->setIcon(QIcon::fromTheme("go-previous"));
+    viewerUtils_layout->addWidget(viewerBtns[PREVIOUS]);
+    connect(viewerBtns[PREVIOUS],&QToolButton::clicked,this,&MainWindow::previousBtn_clicked);
 
-    toolbarBtns->button(FAV)->setIcon(QIcon::fromTheme("love"));
-    toolbarLayout->addWidget(toolbarBtns->button(FAV));
+    viewerBtns[FAV]->setIcon(QIcon::fromTheme("love"));
+    viewerUtils_layout->addWidget( viewerBtns[FAV]);
 
-    toolbarBtns->button(NEXT)->setIcon(QIcon::fromTheme("go-next"));
-    toolbarLayout->addWidget(toolbarBtns->button(NEXT));
-    connect(toolbarBtns->button(NEXT),SIGNAL(clicked()),this,SLOT(nextBtn_clicked()));
+    viewerBtns[NEXT]->setIcon(QIcon::fromTheme("go-next"));
+    viewerUtils_layout->addWidget( viewerBtns[NEXT]);
+    connect( viewerBtns[NEXT],&QToolButton::clicked,this,&MainWindow::nextBtn_clicked);
 
-    toolbarLayout->addWidget(new spacer());
+    viewerUtils_layout->addStretch();
 
-    toolbarBtns->button(FIT)->setIcon(QIcon::fromTheme("zoom-select-fit"));
-    toolbarLayout->addWidget(toolbarBtns->button(FIT));
-    connect(toolbarBtns->button(FIT),SIGNAL(clicked()),this,SLOT(fitBtn_clicked()));
-
-
-    toolbarBtns->button(SHARE)->setIcon(QIcon::fromTheme("document-share"));
-    toolbarLayout->addWidget(toolbarBtns->button(SHARE));
-
-    toolbarBtns->button(EDIT)->setIcon(QIcon::fromTheme("editor"));
-    toolbarLayout->addWidget(toolbarBtns->button(EDIT));
-    toolbarBtns->button(EDIT)->setCheckable(true);
-    connect(toolbarBtns->button(EDIT),SIGNAL(clicked()),this,SLOT(editBtn_clicked()));
+    viewerBtns[FIT]->setIcon(QIcon::fromTheme("zoom-select-fit"));
+    viewerUtils_layout->addWidget( viewerBtns[FIT]);
+    viewerBtns[FIT]->setCheckable(true);
+    connect(viewerBtns[FIT],&QToolButton::clicked,this,&MainWindow::fitBtn_clicked);
 
 
+    viewerBtns[SHARE]->setIcon(QIcon::fromTheme("document-share"));
+    viewerUtils_layout->addWidget(viewerBtns[SHARE]);
 
-
+    viewerBtns[EDIT]->setIcon(QIcon::fromTheme("editor"));
+    viewerUtils_layout->addWidget(viewerBtns[EDIT]);
+    viewerBtns[EDIT]->setCheckable(true);
 
 }
 
@@ -287,8 +293,7 @@ void MainWindow::setUpPixs()
     //frame->setContentsMargins(0,0,0,0);
     layout->setContentsMargins(0,0,0,0);
     layout->setSpacing(0);
-    layout->addWidget(sidebar,Qt::AlignLeft);
-    layout->addWidget(sidebarBorder);
+
     layout->addWidget(views,Qt::AlignCenter);
     layout->addWidget(altSidebarBorder);
     layout->addWidget(altSidebar,Qt::AlignRight);
@@ -361,8 +366,32 @@ void MainWindow::createActions()
 
 void MainWindow::changeView(int id)
 {
-    stack->setCurrentIndex(id);
-    qDebug()<<sidebarBtns->button(id)->objectName();
+    switch(id)
+    {
+
+    case VIEWER:
+        stack->setCurrentIndex(VIEWER);
+        collectionUtils->setVisible(false);
+        viewerUtils->setVisible(true);
+        collectionBtns->button(VIEWER)->setChecked(true);
+        break;
+    case GALLERY:
+        stack->setCurrentIndex(GALLERY);
+        viewerUtils->setVisible(false);
+        collectionUtils->setVisible(true);
+        collectionBtns->button(GALLERY)->setChecked(true);
+
+        break;
+    case ALBUMS: stack->setCurrentIndex(ALBUMS); break;
+    case PEOPLE: stack->setCurrentIndex(PEOPLE); break;
+    case TAGS: stack->setCurrentIndex(TAGS); break;
+    case SETTINGS: stack->setCurrentIndex(SETTINGS); break;
+
+
+    }
+
+
+    qDebug()<<collectionBtns->button(id)->objectName();
 }
 
 bool MainWindow::loadFolder(const QString &filePath)
@@ -399,8 +428,11 @@ bool MainWindow::loadFile(const QString &fileName)
         return false;
     }
 
+
     setImage(newImage);
     currentImage=fileName;
+    this->setWindowTitle(QFileInfo(currentImage).fileName());
+
 
     setWindowFilePath(fileName);
 
@@ -516,17 +548,30 @@ void MainWindow::normalSize()
 
 void MainWindow::fitBtn_clicked()
 {
-    fitToWindowAct->setChecked(true);
-    fitToWindow();
+    if(viewerBtns[FIT]->isChecked())
+    {
+        qDebug()<<"the button is checked";
+        fitToWindow();
+        viewerBtns[FIT]->setChecked(true);
+    }else
+    {
+        qDebug()<<"the button is unchecked";
+        normalSize();
+        viewerBtns[FIT]->setChecked(false);
+    }
 }
 
 void MainWindow::fitToWindow()
 {
-    bool fitToWindow = fitToWindowAct->isChecked();
-    scrollArea->setWidgetResizable(fitToWindow);
-    if (!fitToWindow)
-        normalSize();
-    updateActions();
+    auto imgW = imageLabel->pixmap()->toImage().width();
+    auto imgH = imageLabel->pixmap()->toImage().height();
+
+    auto percent = (imgW*100)/imgH;
+
+    qDebug()<<"width:"<<imgW<<"height:"<<imgH<<"percent:"<<percent<<"scroll width:"<<scrollArea->size().width()
+           <<"new size:"<<scrollArea->size().width()<<scrollArea->size().width()*(percent/100);
+    imageLabel->resize((scrollArea->size().height()*percent)/100,scrollArea->size().height());
+
 }
 
 bool MainWindow::saveFile(const QString &fileName)
@@ -548,14 +593,13 @@ void MainWindow::setImage(const QImage &newImage)
     image = newImage;
     imageLabel->setPixmap(QPixmap::fromImage(image));
     scaleFactor = 1.0;
-
     scrollArea->setVisible(true);
     printAct->setEnabled(true);
     fitToWindowAct->setEnabled(true);
     updateActions();
 
-    if (!fitToWindowAct->isChecked())
-        imageLabel->adjustSize();
+    if (!viewerBtns[FIT]->isChecked()) normalSize();
+    else fitToWindow();
 }
 
 void MainWindow::updateActions()
@@ -593,13 +637,13 @@ void MainWindow::enterEvent(QEvent *event)
 
 void MainWindow::hideToolbar()
 {
-    toolbar->setVisible(false);
+    utilsBar->setVisible(false);
     toolbarBorder->setVisible(false);
 }
 
 void MainWindow::showToolbar()
 {
-    toolbar->setVisible(true);
+    utilsBar->setVisible(true);
     toolbarBorder->setVisible(true);
 }
 
@@ -616,7 +660,7 @@ void MainWindow::editBtn_clicked()
     {
         altSidebar->setVisible(false);
         altSidebarBorder->setVisible(false);
-        toolbarBtns->button(EDIT)->setChecked(false);
+        viewerBtns[EDIT]->setChecked(false);
         altSidebarVisible=!altSidebarVisible;
 
 
@@ -624,7 +668,7 @@ void MainWindow::editBtn_clicked()
     {
         altSidebar->setVisible(true);
         altSidebarBorder->setVisible(true);
-        toolbarBtns->button(EDIT)->setChecked(true);
+        viewerBtns[EDIT]->setChecked(true);
         altSidebarVisible=!altSidebarVisible;
 
     }
@@ -632,22 +676,10 @@ void MainWindow::editBtn_clicked()
 
 void MainWindow::sidebarBtn_clicked()
 {
-    if(sidebarVisible)
-    {
-        sidebar->setVisible(false);
-        sidebarBorder->setVisible(false);
-        toolbarBtns->button(SIDEBAR)->setChecked(false);
-        sidebarVisible=!sidebarVisible;
+    this->changeView(GALLERY);
+    viewerBtns[SIDEBAR]->setChecked(true);
+    sidebarVisible=!sidebarVisible;
 
-
-    }else
-    {
-        sidebar->setVisible(true);
-        sidebarBorder->setVisible(true);
-        toolbarBtns->button(SIDEBAR)->setChecked(true);
-        sidebarVisible=!sidebarVisible;
-
-    }
 }
 
 void MainWindow::nextBtn_clicked()

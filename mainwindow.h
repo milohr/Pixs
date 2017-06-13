@@ -60,8 +60,8 @@ public:
     ~MainWindow();
     bool loadFolder(const QString &);
     bool loadFile(const QString &);
-    enum sidebarBG { VIEWER, GALLERY, ALBUMS, PEOPLE, TAGS, SETTINGS, SCOUNT};
-    enum toolbarBG { SIDEBAR, FULLSCREEN, PREVIOUS, FAV, NEXT, FIT, SHARE, EDIT, TCOUNT };
+    enum CollectionButtons { VIEWER, GALLERY, ALBUMS, PEOPLE, TAGS, SETTINGS, SCOUNT};
+    enum ViewerButtons { SIDEBAR, FULLSCREEN, PREVIOUS, FAV, NEXT, FIT, SHARE, EDIT, TCOUNT };
 
 private:
 
@@ -73,12 +73,12 @@ private:
 
     QFrame *frame;
     QHBoxLayout *layout;
-    QWidget *sidebar;
-    lineS *sidebarBorder;
-    QButtonGroup *sidebarBtns;
+    QWidget *collectionUtils;
     QWidget *views;
-    QWidget *toolbar;
-    QButtonGroup *toolbarBtns;
+    QWidget *viewerUtils;
+    QWidget *utilsBar;
+    QButtonGroup *collectionBtns;
+    QMap<int,QToolButton*> viewerBtns;
     lineS *toolbarBorder;
     QWidget *altSidebar;
     lineS *altSidebarBorder;
@@ -107,11 +107,11 @@ private:
     QString currentImage;
 
 
-    void setUpSidebar();
+    void setUpCollectionBar();
     void setUpViews();
     void setUpAltSidebar();
     void setUpPixs();
-    void setUpToolbar();
+    void setUpViewerBar();
 
     void setImage(const QImage &newImage);
     void updateActions();
