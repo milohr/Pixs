@@ -172,14 +172,15 @@ void MainWindow::setUpViews()
 
     stack->setContentsMargins(0,0,0,0);
     //stack->layout()->setContentsMargins(0,0,0,0);
+    scrollArea->installEventFilter(this);
     scrollArea->setContentsMargins(0,0,0,0);
     //scrollArea->layout()->setContentsMargins(0,0,0,0);
 
-    imageLabel->setBackgroundRole(QPalette::Base);
+    //    imageLabel->setBackgroundRole(QPalette::Base);
     imageLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
     imageLabel->setScaledContents(true);
     //imageLabel->setContentsMargins(0,0,0,0);
-    scrollArea->setBackgroundRole(QPalette::Dark);
+    //    scrollArea->setBackgroundRole(QPalette::Dark);
     scrollArea->setWidget(imageLabel);
     scrollArea->setVisible(false);
     scrollArea->setFrameShape(QFrame::NoFrame);
@@ -652,6 +653,16 @@ void MainWindow::leaveEvent(QEvent *event)
     //  toolbar->setVisible(false);
     //  toolbarBorder->setVisible(false);
     event->accept();
+}
+
+bool MainWindow::eventFilter(QObject *obj, QEvent *event)
+{
+    if(obj == scrollArea)
+    {
+
+        if(event->type()==QEvent::Resize)
+            if(viewerBtns[FIT]->isChecked()) this->fitToWindow();
+    }
 }
 
 void MainWindow::editBtn_clicked()
