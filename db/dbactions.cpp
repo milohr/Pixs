@@ -138,6 +138,21 @@ int dbactions::insert(const QString &tableName, const QVariantMap &insertData)
     return sqlQuery.exec() ? lastInsertId() : 0;
 }
 
+bool dbactions::update(const QString &id, const QVariant &op, const QString &table, const QString &column, const QVariant &newValue)
+{
+    auto query = QString("update %1 set %2 = %3 where %4 = \"%5\"").arg(table, column, newValue.toString(), op.toString(), id);
+    sqlQuery.prepare(query);
+
+    qDebug()<<"QUERY:"<<query;
+
+    if(sqlQuery.exec())
+        return true;
+
+    sqlQuery.lastError();
+    return false;
+
+}
+
 int dbactions::lastInsertId() const
 {
     // WARNING!
@@ -150,12 +165,6 @@ void dbactions::remove(const QString &path)
 {
 
 }
-
-void dbactions::update(const QString &path)
-{
-
-}
-
 
 
 void dbactions::select(const QString &query)
@@ -297,6 +306,13 @@ QList<QMap<int, QVariant> > dbactions::selectImage(const QString &img)
         }
     }
     return result;
+}
+
+bool dbactions::insertFAV(const QString &id)
+{
+    if(this->update(id,ImagesTableCols[ImagesTable::URL],DBTablesNames[DBTables::IMAGES],ImagesTableCols[ImagesTable::FAV],1))
+        return true;
+    return false;
 }
 
 void dbactions::insertAlbum(const QString &title)

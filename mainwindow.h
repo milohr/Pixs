@@ -63,9 +63,18 @@ public:
     enum CollectionButtons { VIEWER, GALLERY, ALBUMS, PEOPLE, TAGS, SETTINGS, SCOUNT};
     enum ViewerButtons { SIDEBAR, FULLSCREEN, PREVIOUS, FAV, NEXT, FIT, SHARE, EDIT, TCOUNT };
 
+    /*BUTTONS ACTIONS*/
+    void favBtn_clicked();
+
+
+    /*TOOLBAR ACTIONS*/
+    bool markAsFav(const QString &url);
+
 private:
 
     Ui::MainWindow *ui;
+
+    dbactions connection;
 
     Settings *settingsView;
     collectionView *galleryView;

@@ -80,6 +80,8 @@ MainWindow::MainWindow(QWidget *parent) :
         galleryView->populate("select * from images");
     }
 
+    connection.prepareQuick();
+
 
 }
 
@@ -245,6 +247,7 @@ void MainWindow::setUpViewerBar()
 
     viewerBtns[FAV]->setIcon(QIcon::fromTheme("love"));
     viewerUtils_layout->addWidget( viewerBtns[FAV]);
+    connect(viewerBtns[FAV],&QToolButton::clicked,this,&MainWindow::favBtn_clicked);
 
     viewerBtns[NEXT]->setIcon(QIcon::fromTheme("go-next"));
     viewerUtils_layout->addWidget( viewerBtns[NEXT]);
@@ -417,12 +420,18 @@ bool MainWindow::loadFolder(const QString &filePath)
     }
 }
 
+
+
 bool MainWindow::loadFile(const QString &fileName)
 {
-    QImageReader reader(fileName);
+    this->currentImage=fileName;
+    QImageReader reader(currentImage);
     reader.setAutoTransform(true);
+
     const QImage newImage = reader.read();
-    if (newImage.isNull()) {
+
+    if (newImage.isNull())
+    {
         QMessageBox::information(this, QGuiApplication::applicationDisplayName(),
                                  tr("Cannot load %1: %2")
                                  .arg(QDir::toNativeSeparators(fileName), reader.errorString()));
@@ -431,7 +440,7 @@ bool MainWindow::loadFile(const QString &fileName)
 
 
     setImage(newImage);
-    currentImage=fileName;
+
     this->setWindowTitle(QFileInfo(currentImage).fileName());
 
 
@@ -442,6 +451,17 @@ bool MainWindow::loadFile(const QString &fileName)
     return true;
 }
 
+void MainWindow::favBtn_clicked()
+{
+    if (this->markAsFav(this->currentImage)) qDebug()<<"marked as fav";
+}
+
+bool MainWindow::markAsFav(const QString &url)
+{
+    if (connection.insertFAV(url)) return true;
+
+    return false;
+}
 
 
 void MainWindow::open()

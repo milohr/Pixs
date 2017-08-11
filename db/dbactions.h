@@ -24,7 +24,13 @@ public:
     {
         URL, TITLE, RATE, FAV, COLOR, NOTE, ADDDATE, SOURCE
     };
+    enum DBTables
+    {
+        ALBUMS, IMAGES, ALBUMS_IMAGES, SOURCES
+    };
 
+    QMap<int, QString> ImagesTableCols {{URL, "url"},{TITLE,"title"},{RATE,"rate"},{FAV,"fav"},{COLOR,"color"},{NOTE,"note"},{ADDDATE,"addDate"},{SOURCE,"source"}};
+    QMap<int, QString> DBTablesNames {{ALBUMS,"albums"},{IMAGES,"images"},{ALBUMS_IMAGES,"albums_images"},{SOURCES, "sources"}};
     explicit dbactions(QObject *parent = nullptr);
     void createDB();
 
@@ -41,6 +47,10 @@ public:
 
     QList<QMap<int,QVariant>> selectImage(const QString &img);
 
+    /*USEFUL ACTIONS*/
+    bool insertFAV(const QString &id);
+
+
 private:
 
 
@@ -56,7 +66,7 @@ private:
     bool queryExec(const QString &sqlQueryString);
 
     int insert(const QString &tableName, const QVariantMap &insertData);
-    void update(const QString &path);
+    bool update(const QString &id, const QVariant &op, const QString &table, const QString &column, const QVariant &newValue);
     void remove(const QString &path);
 
     int lastInsertId() const;
