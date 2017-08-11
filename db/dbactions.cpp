@@ -166,6 +166,17 @@ void dbactions::remove(const QString &path)
 
 }
 
+bool dbactions::check(const QString &tableName, const QString &where)
+{
+    auto query = QString("select url from %1 where %2").arg(tableName,where);
+    qDebug()<<query;
+    sqlQuery.prepare(query);
+    if(sqlQuery.exec())
+        if(sqlQuery.next()) return true;
+
+    return false;
+}
+
 
 void dbactions::select(const QString &query)
 {
@@ -308,9 +319,9 @@ QList<QMap<int, QVariant> > dbactions::selectImage(const QString &img)
     return result;
 }
 
-bool dbactions::insertFAV(const QString &id)
+bool dbactions::insertFAV(const QString &id, const int &value)
 {
-    if(this->update(id,ImagesTableCols[ImagesTable::URL],DBTablesNames[DBTables::IMAGES],ImagesTableCols[ImagesTable::FAV],1))
+    if(this->update(id,ImagesTableCols[ImagesTable::URL],DBTablesNames[DBTables::IMAGES],ImagesTableCols[ImagesTable::FAV],value))
         return true;
     return false;
 }

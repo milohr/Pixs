@@ -68,7 +68,11 @@ public:
 
 
     /*TOOLBAR ACTIONS*/
-    bool markAsFav(const QString &url);
+    bool markAsFav(const QString &url, const bool &state);
+
+    /*USEFUL FUNCTIONS*/
+    void favedIcon(const bool &state);
+    bool isItFav(const QString &url);
 
 private:
 

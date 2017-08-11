@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include <QGraphicsColorizeEffect>
 
 static void initializeImageFileDialog(QFileDialog &dialog, QFileDialog::AcceptMode acceptMode)
 {
@@ -453,16 +454,35 @@ bool MainWindow::loadFile(const QString &fileName)
 
 void MainWindow::favBtn_clicked()
 {
-    if (this->markAsFav(this->currentImage)) qDebug()<<"marked as fav";
+    bool state = isItFav(this->currentImage);
+    if (this->markAsFav(this->currentImage, !state))
+        this->favedIcon(!state);
+
 }
 
-bool MainWindow::markAsFav(const QString &url)
+void MainWindow::favedIcon(const bool &state)
 {
-    if (connection.insertFAV(url)) return true;
+    auto effect = new QGraphicsColorizeEffect(this);
+    effect->setColor(QColor("#dc042c"));
+
+    if(state)  effect->setStrength(1.0);
+    else effect->setStrength(0);
+
+    viewerBtns[FAV]->setGraphicsEffect(effect);
+
+}
+
+bool MainWindow::markAsFav(const QString &url, const bool &state)
+{
+    if (connection.insertFAV(url,state? 1: 0)) return true;
 
     return false;
 }
 
+bool MainWindow::isItFav(const QString &url)
+{
+    return connection.check(connection.DBTablesNames[connection.DBTables::IMAGES],QString(" url = \"%1\" AND fav = %2").arg(url,"1"));
+}
 
 void MainWindow::open()
 {
@@ -625,6 +645,8 @@ void MainWindow::setImage(const QImage &newImage)
 
 void MainWindow::updateActions()
 {
+    this->favedIcon(isItFav(this->currentImage));
+
     saveAsAct->setEnabled(!image.isNull());
     copyAct->setEnabled(!image.isNull());
     zoomInAct->setEnabled(!fitToWindowAct->isChecked());

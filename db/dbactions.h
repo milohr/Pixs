@@ -48,8 +48,8 @@ public:
     QList<QMap<int,QVariant>> selectImage(const QString &img);
 
     /*USEFUL ACTIONS*/
-    bool insertFAV(const QString &id);
-
+    bool insertFAV(const QString &id, const int &value);
+    bool check(const QString &tableName, const QString &where);
 
 private:
 
